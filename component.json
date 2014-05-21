@@ -1,0 +1,9 @@
+{
+  "name": "ractive-window",
+  "repository": "evschris/ractive-window",
+  "description": "In-browser window component, similar to jQueryUI Dialog, built on Ractive.",
+  "scripts": ["index.js"],
+  "styles": ["index.css"],
+  "main": "index.js",
+  "license": "MIT"
+}
