@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ractive-window Example</title>
+    <link type="text/css" rel="stylesheet" href="build/build.css" />
+  </head>
+  <body>
+    <div id="container" style="position: absolute; left: 0px; top: 40px; right: 0px; bottom: 0px;"></div>
+    <script type="text/javascript" src="build/build.js"></script>
+    <script type="text/javascript">
+      var Ractive = require('ractivejs~ractive@dev');
+      var wnds = require('ractive-window');
+
+      var ractive = new Ractive({
+        components: wnds,
+        el: 'container',
+        template: '<button on-click="mkWnd">New Window</button><WindowHost />'
+      });
+
+      var host = ractive.findComponent('WindowHost');
+
+      ractive.on('mkWnd', function(e) {
+        host.newWindow(e, function(w) {
+          w.set({ title: 'Window ' + w.parentNumber, 'geometry.width': 300 });
+        });
+      });
+    </script>
+  </body>
+</html>
