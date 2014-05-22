@@ -1,18 +1,18 @@
 var Ractive = require('ractive');
 
-module.exports = res = {}:
+module.exports = res = {};
 
 (function() {
-  var template = "{{#rendered}}" + 
-    "<div class='ractive-window' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; z-index: {{geometry.index}};' draggable='true'>" + 
-    "  <div class='rw-modal' on-mousedown='moveStart' style="{{^blocked}}display: none;{{/blocked}}"></div>" + 
-    "  <div class='rw-interior'>" + 
-    "    <div class='rw-buttons'>{{>buttons}}</div>" + 
-    "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore' draggable='true'>{{>title}}</div>" + 
-    "    <div class='rw-body'>{{>body}}</div>" + 
-    "    <div class='rw-resize-handle' on-mousedown='resizeStart'></div>" + 
-    "    <div class='rw-foot'>{{>foot}}</div>" + 
-    "  </div>" + 
+  var template = "{{#rendered}}" +
+    "<div class='ractive-window' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; z-index: {{geometry.index}};' draggable='true'>" +
+    "  <div class='rw-modal' on-mousedown='moveStart' style='{{^blocked}}display: none;{{/blocked}}'></div>" +
+    "  <div class='rw-interior'>" +
+    "    <div class='rw-buttons'>{{>buttons}}</div>" +
+    "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore' draggable='true'>{{>title}}</div>" +
+    "    <div class='rw-body'>{{>body}}</div>" +
+    "    <div class='rw-resize-handle' on-mousedown='resizeStart'></div>" +
+    "    <div class='rw-foot'>{{>foot}}</div>" +
+    "  </div>" +
     "</div>{{/rendered}}";
 
   var Window = Ractive.extend({
