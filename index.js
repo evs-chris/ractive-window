@@ -4,18 +4,19 @@ module.exports = res = {};
 
 (function() {
   var template = "{{#rendered}}" +
-    "<div class='ractive-window' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; z-index: {{geometry.index}};' draggable='true'>" +
+    "<div class='ractive-window' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; z-index: {{geometry.index}};'>" +
     "  <div class='rw-modal' on-mousedown='moveStart' style='{{^blocked}}display: none;{{/blocked}}'></div>" +
     "  <div class='rw-interior'>" +
     "    <div class='rw-buttons'>{{>buttons}}</div>" +
-    "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore' draggable='true'>{{>title}}</div>" +
+    "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>" +
     "    <div class='rw-body'>{{>body}}</div>" +
     "    <div class='rw-resize-handle' on-mousedown='resizeStart'></div>" +
     "    <div class='rw-foot'>{{>foot}}</div>" +
     "  </div>" +
     "</div>{{/rendered}}";
 
-  var Window = Ractive.extend({
+  var Window;
+  Window = Ractive.extend({
     template: template,
     init: function() {
       var wnd = this;
@@ -34,7 +35,7 @@ module.exports = res = {};
         }
       };
       wnd.on('moveStart', function(e) {
-        if (e.original.type == 'mousedown') {
+        if (e.original.type === 'mousedown' && e.original.button === 0) {
           wnd.restore();
           sx = +(e.original.x || e.original.clientX);
           sy = +(e.original.y || e.original.clientY);
@@ -56,7 +57,7 @@ module.exports = res = {};
         }
       };
       wnd.on('resizeStart', function(e) {
-        if (e.original.type == 'mousedown') {
+        if (e.original.type == 'mousedown' && e.original.button === 0) {
           wnd.restore();
           sx = (e.original.x || e.original.clientX);
           sy = (e.original.y || e.original.clientY);
@@ -93,7 +94,7 @@ module.exports = res = {};
         top: 20, left: 20, width: 200, height: 200, state: 0, dunit: 'px', index: 1000,
         minimum: { x: 0, y: 0, width: 70, height: 50 }
       },
-      rendered: true,
+      rendered: false,
       blocked: false
     },
     partials: {
@@ -101,10 +102,12 @@ module.exports = res = {};
       body: '',
       foot: '',
       buttons: '{{>minimizeButton}}{{>restoreButton}}{{>closeButton}}',
-      minimizeButton: "<button on-click='minimize' class='rw-minimize'>_</button>",
-      restoreButton: "<button on-click='restore' class='rw-restore'>^</button>",
-      closeButton: "<button on-click='close' class='rw-close'>X</button>",
-      resizeHandle: "<div style='background-color: black; width: 10px; height: 10px;'></div>"
+      minimizeButton: "<button on-click='minimize' class='rw-minimize'>{{>minimizeButtonLabel}}</button>",
+      minimizeButtonLabel: "_",
+      restoreButton: "<button on-click='restore' class='rw-restore'>{{>restoreButtonLabel}}</button>",
+      restoreButtonLabel: "^",
+      closeButton: "<button on-click='close' class='rw-close'>{{>closeButtonLabel}}</button>",
+      closeButtonLabel: "X"
     },
     rerender: function() {
       var wnd = this;
@@ -232,11 +235,25 @@ module.exports = res = {};
 
   res.Window = Window;
 
-  var WindowHost = function() {
+  var WindowHost;
+  WindowHost = function() {
     var counter = 0;
     return Ractive.extend({
       init: function() {
       },
+      defaults: {
+        button: {
+          label: function label(button, label) { Window.partials[button + 'ButtonLabel'] = label; }
+        },
+        buttons: function() {
+          var partial = '';
+          for (var i = 0; i < arguments.length; i++) {
+            partial += '{{>' + arguments[i] + 'Button}}';
+          }
+          Window.partials.buttons = partial;
+        }
+      },
+      components: { Window: Window },
       data: { windowSlots: [], windows: {}, blocks: {}, globalBlock: null },
       template: "<div class='ractive-window-host-modal' style='{{^blocked}}display: none;{{/blocked}}'></div>{{#windowSlots}}<Window/>{{/windowSlots}}",
       newWindow: function(e, cb) {
@@ -252,7 +269,8 @@ module.exports = res = {};
           wnd.parentNumber = current;
           wnd.set('geometry.index', 1000 + wnds.length);
           wnd.raise();
-          if (!!cb && typeof(cb) === 'function') { cb(wnd); }
+          if (!!cb && typeof(cb) === 'function') { try { cb(wnd); } catch (e) {} }
+          wnd.set('rendered', true);
         });
       },
       killWindow: function(wnd) {
