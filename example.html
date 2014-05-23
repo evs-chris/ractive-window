@@ -21,7 +21,7 @@
       var host = ractive.findComponent('WindowHost');
 
       ractive.on('mkWnd', function(e) {
-        host.newWindow(e, function(w) {
+        host.newWindow(function(w) {
           w.set({ title: 'Window ' + w.parentNumber, 'geometry.width': 300 });
         });
       });

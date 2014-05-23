@@ -256,7 +256,7 @@ module.exports = res = {};
       components: { Window: Window },
       data: { windowSlots: [], windows: {}, blocks: {}, globalBlock: null },
       template: "<div class='ractive-window-host-modal' style='{{^blocked}}display: none;{{/blocked}}'></div>{{#windowSlots}}<Window/>{{/windowSlots}}",
-      newWindow: function(e, cb) {
+      newWindow: function(e, cb) { // e can be an event or the callback. the callback (cb) is optional
         var current = counter;
         counter += 1;
         var arr = this.get('windowSlots');
@@ -270,6 +270,7 @@ module.exports = res = {};
           wnd.set('geometry.index', 1000 + wnds.length);
           wnd.raise();
           if (!!cb && typeof(cb) === 'function') { try { cb(wnd); } catch (e) {} }
+          else if (typeof(e) === 'function') { try { e(wnd); } catch (ex) {} }
           wnd.set('rendered', true);
         });
       },
