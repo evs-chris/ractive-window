@@ -22,8 +22,8 @@
 
 .rw-interior > .rw-body {
   position: absolute;
-  top: 1.1em;
-  bottom: 1.1em;
+  top: 2em;
+  bottom: 0.1em;
   left: 0.1em;
   right: 0.1em;
   overflow: auto;
