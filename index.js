@@ -112,7 +112,7 @@ module.exports = res = {};
     rerender: function() {
       var wnd = this;
       wnd.set('rendered', false);
-      this.set('rendered', true);
+      return this.set('rendered', true);
     },
     move: function(x, y) {
       y = +y;
@@ -216,7 +216,7 @@ module.exports = res = {};
     },
     content: function(ct) {
       this.partials.body = ct;
-      this.rerender();
+      return this.rerender();
     },
     onClose: function() {
       var wnd = this;
@@ -243,7 +243,7 @@ module.exports = res = {};
       },
       defaults: {
         button: {
-          label: function label(button, label) { Window.partials[button + 'ButtonLabel'] = label; }
+          label: function label(button, lbl) { Window.partials[button + 'ButtonLabel'] = lbl; }
         },
         buttons: function() {
           var partial = '';
