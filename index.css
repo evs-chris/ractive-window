@@ -7,7 +7,18 @@
   padding: -1px;
 }
 
+.ractive-window.resizable {
+  min-width: 10em;
+  min-height: 2em;
+}
+
 .ractive-window > .rw-interior {
+  cursor: default;
+}
+.ractive-window.fixed > .rw-interior {
+  margin: 5px;
+}
+.ractive-window.resizable > .rw-interior {
   position: absolute;
   top: 5px;
   bottom: 5px;
@@ -17,10 +28,18 @@
 }
 
 .rw-interior > .rw-title {
-  height: 1em;
+  font-weight: bold;
+}
+.ractive-window.fixed .rw-interior > .rw-title {
+  float: left;
+  margin-right: 1em;
 }
 
-.rw-interior > .rw-body {
+.ractive-window.fixed .rw-interior > .rw-body {
+  margin: 0.1em;
+  clear: both;
+}
+.ractive-window.resizable .rw-interior > .rw-body {
   position: absolute;
   top: 2em;
   bottom: 0.1em;
@@ -29,12 +48,48 @@
   overflow: auto;
 }
 
-.rw-interior > .rw-buttons {
-  float: right;
-  height: 1em;
+.ractive-window.resizable.with-buttons .rw-body {
+  bottom: 2.7em;
 }
 
-.rw-interior > .rw-resize-handle {
+.rw-buttons > button.right {
+  float: right;
+}
+
+.rw-buttons > button.left {
+  float: left;
+}
+
+.rw-interior > .rw-buttons {
+  text-align: center;
+  padding-top: 0.1em;
+}
+.ractive-window.fixed .rw-interior > .rw-buttons::after {
+  display: block;
+  content: ' ';
+  clear: both;
+}
+.ractive-window.fixed .rw-interior > .rw-buttons {
+  padding: 0.2em;
+}
+.ractive-window.resizable .rw-interior > .rw-buttons {
+  position: absolute;
+  bottom: 0.1em;
+  height: 2.5em;
+  left: 0.1em;
+  right: 0.1em;
+}
+
+.rw-interior > .rw-controls {
+  float: right;
+}
+
+.ractive-window.fixed .rw-interior > .rw-resize-handle {
+  display: none;
+}
+
+.ractive-window.resizable .rw-interior > .rw-resize-handle {
+  display: block;
   position: absolute;
   bottom: -5px;
   right: -5px;
@@ -70,7 +125,7 @@
   z-index: 10000;
 }
 
-.ractive-window .rw-buttons button {
+.ractive-window .rw-controls button {
   border: 1px solid black;
   box-shadow: rgba(0, 0, 0, 0.25) 1px 1px 2px;
   border-radius: 3px;

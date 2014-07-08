@@ -1,15 +1,21 @@
 var Ractive = require('ractive');
 
+// TODO: {message|input}box api built onto window -- plugin?
+// TODO: initial position helpers -- center screen/parent, cascade, etc
+// TODO: grid freindly sizing?
+// TODO: have window creation return a promise that fulfills or rejects when window closes
+
 module.exports = res = {};
 
 (function() {
   var template = "{{#rendered}}" +
-    "<div class='ractive-window' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; z-index: {{geometry.index}};'>" +
+    "<div id='ractive-window-{{id}}' class='ractive-window{{#(buttons.length > 0)}} with-buttons{{/}}{{#resizable}} resizable{{/}}{{^resizable}} fixed{{/}}' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; {{#resizable}}width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; {{/}}z-index: {{geometry.index}};'>" +
     "  <div class='rw-modal' on-mousedown='moveStart' style='{{^blocked}}display: none;{{/blocked}}'></div>" +
     "  <div class='rw-interior'>" +
-    "    <div class='rw-buttons'>{{>buttons}}</div>" +
+    "    <div class='rw-controls'>{{>controls}}</div>" +
     "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>" +
     "    <div class='rw-body'>{{>body}}</div>" +
+    "    {{#(buttons.length) > 0}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}" +
     "    <div class='rw-resize-handle' on-mousedown='resizeStart'></div>" +
     "    <div class='rw-foot'>{{>foot}}</div>" +
     "  </div>" +
@@ -86,35 +92,59 @@ module.exports = res = {};
         }
       });
       wnd.on('raise', function(e) { wnd.raise(); });
-
       wnd.on('close', function(e) { wnd.close(); });
+      wnd.on('dialog-button', function(e) {
+        var fn = e.context.action;
+        if (!!fn && typeof fn === 'function') fn.call(this);
+      });
     },
+    loaded: function() {
+      if (!!!this.get('buttonClass') && !!this.windowHost.get('buttonClass')) {
+        this.set('buttonClass', this.windowHost.get('buttonClass'));
+      }
+    },
+    activated: function() {},
     data: {
       geometry: {
         top: 20, left: 20, width: 200, height: 200, state: 0, dunit: 'px', index: 1000,
         minimum: { x: 0, y: 0, width: 70, height: 50 }
       },
       rendered: false,
-      blocked: false
+      blocked: false,
+      resizable: true
     },
     partials: {
       title: '{{ title }}',
       body: '',
       foot: '',
-      buttons: '{{>minimizeButton}}{{>restoreButton}}{{>closeButton}}',
-      minimizeButton: "<button on-click='minimize' class='rw-minimize'>{{>minimizeButtonLabel}}</button>",
-      minimizeButtonLabel: "_",
-      restoreButton: "<button on-click='restore' class='rw-restore'>{{>restoreButtonLabel}}</button>",
-      restoreButtonLabel: "^",
-      closeButton: "<button on-click='close' class='rw-close'>{{>closeButtonLabel}}</button>",
-      closeButtonLabel: "X"
+      buttons: "{{#buttons}}<button on-click='dialog-button' class='{{position || ''}}{{#buttonClass}} {{buttonClass}}{{/}}'>{{ label }}</button>{{/}}",
+      controls: '{{>minimizeControl}}{{>restoreControl}}{{>closeControl}}',
+      minimizeControl: "<button on-click='minimize' class='rw-minimize'>{{>minimizeControlLabel}}</button>",
+      minimizeControlLabel: "_",
+      restoreControl: "<button on-click='restore' class='rw-restore'>{{>restoreControlLabel}}</button>",
+      restoreControlLabel: "^",
+      closeControl: "<button on-click='close' class='rw-close'>{{>closeControlLabel}}</button>",
+      closeControlLabel: "X"
     },
     rerender: function() {
       var wnd = this;
+      if (!wnd.get('rendered')) return Ractive.Promise.resolve('ok');
       wnd.set('rendered', false);
       return this.set('rendered', true);
     },
     move: function(x, y) {
+      if (typeof x === 'string') {
+        switch (x) {
+          case 'center':
+          case 'centerScreen':
+            this.set({
+              'geometry.top': (this.windowHost.el.clientHeight - document.getElementById('ractive-window-' + this.parentNumber).clientHeight) / 2,
+              'geometry.left': (this.windowHost.el.clientWidth - document.getElementById('ractive-window-' + this.parentNumber).clientWidth) / 2
+            });
+            break;
+        }
+        return;
+      }
       y = +y;
       x = +x;
       var min = this.get('geometry.minimum');
@@ -218,6 +248,43 @@ module.exports = res = {};
       this.partials.body = ct;
       return this.rerender();
     },
+    buttons: function() {
+      var arr = [], i;
+      this.set('buttons', arr);
+      if (arguments.length === 1 && typeof arguments[0].length === 'number') {
+        arr = arguments[0];
+      } else {
+        for (i = 0; i < arguments.length; i++) {
+          arr.push(arguments[i]);
+        }
+      }
+      var left = [], right = [], middle = [];
+      for (i = 0; i < arr.length; i++) {
+        var b = arr[i];
+        if (!!b.position) {
+          if (b.position === 'left') left.push(b);
+          else if (b.position === 'right') right.push(b);
+          else if (b.position === 'middle') middle.push(b);
+          else if (b.position === 'center') middle.push(b);
+          else { right.push(b); b.position = 'right'; }
+        } else { right.push(b); b.position = 'right'; }
+      }
+      arr = [];
+      for (i = 0; i < left.length; i++) arr.push(left[i]);
+      for (i = right.length - 1; i >= 0; i--) arr.push(right[i]);
+      for (i = 0; i < middle.length; i++) arr.push(middle[i]);
+      this.set('buttons', arr);
+    },
+    controls: function() {
+      var arr = [], i, str = '';
+      if (arguments.length === 1 && typeof arguments[0] !== 'string') arr = arguments[0];
+      else {
+        for (i = 0; i < arguments.length; i++) arr.push(arguments[i]);
+      }
+      for (i = 0; i < arr.length; i++) str += '{{>' + arr[i] + 'Control}}';
+      this.partials.controls = str;
+      return this.rerender();
+    },
     onClose: function() {
       var wnd = this;
       wnd.kill();
@@ -235,6 +302,13 @@ module.exports = res = {};
 
   res.Window = Window;
 
+  var messageButtons = {
+    ok: { label: 'OK', action: function() { this.result = 'ok'; this.close(); }, position: 'middle' },
+    cancel: { label: 'Cancel', action: function() { this.result = 'cancel'; this.close(); }, position: 'middle' },
+    yes: { label: 'Yes', action: function() { this.result = 'yes'; this.close(); }, position: 'middle' },
+    no: { label: 'No', action: function() { this.result = 'no'; this.close(); }, position: 'middle' }
+  };
+
   var WindowHost;
   WindowHost = function() {
     var counter = 0;
@@ -242,19 +316,20 @@ module.exports = res = {};
       init: function() {
       },
       defaults: {
-        button: {
-          label: function label(button, lbl) { Window.partials[button + 'ButtonLabel'] = lbl; }
+        control: {
+          label: function label(control, lbl) { Window.partials[control + 'ControlLabel'] = lbl; }
         },
-        buttons: function() {
+        controls: function() {
           var partial = '';
           for (var i = 0; i < arguments.length; i++) {
-            partial += '{{>' + arguments[i] + 'Button}}';
+            partial += '{{>' + arguments[i] + 'Control}}';
           }
-          Window.partials.buttons = partial;
+          Window.partials.controls = partial;
         }
       },
       components: { Window: Window },
       data: { windowSlots: [], windows: {}, blocks: {}, globalBlock: null },
+      computed: { blocked: function() { return !!this.get('globalBlock'); } },
       template: "<div class='ractive-window-host-modal' style='{{^blocked}}display: none;{{/blocked}}'></div>{{#windowSlots}}<Window/>{{/windowSlots}}",
       newWindow: function(e, cb) { // e can be an event or the callback. the callback (cb) is optional
         var current = counter;
@@ -267,11 +342,15 @@ module.exports = res = {};
           host.set('windows.' + current, wnd);
           wnd.windowHost = host;
           wnd.parentNumber = current;
-          wnd.set('geometry.index', 1000 + wnds.length);
-          wnd.raise();
+          wnd.set({
+            'geometry.index': 1000 + wnds.length,
+            'id': current
+          });
           if (!!cb && typeof(cb) === 'function') { try { cb(wnd); } catch (e) {} }
           else if (typeof(e) === 'function') { try { e(wnd); } catch (ex) {} }
-          wnd.set('rendered', true);
+          wnd.loaded();
+          wnd.raise();
+          wnd.set('rendered', true).then(wnd.activated());
         });
       },
       killWindow: function(wnd) {
@@ -292,6 +371,7 @@ module.exports = res = {};
           var arr = blocks[i];
           if (!!arr && Array.isArray(arr) && arr.indexOf(wnd.parentNumber) >= 0) arr.splice(arr.indexOf(wnd.parentNumber), 1);
         }
+        if (wnd === this.get('globalBlock')) this.set('globalBlock', null);
         this.unblockUnblockedWindows();
       },
       raiseWindow: function(wnd) {
@@ -357,9 +437,9 @@ module.exports = res = {};
           return res;
         }
 
-        // if globalBlock is set, add 9000 to it and all of its blockers
+        // if globalBlock is set, add 10000 to it and all of its blockers
         var globals = globalBlocks(this.get('globalBlock'));
-        for (i in globals) globals[i].add('geometry.index', 9000);
+        for (i in globals) globals[i].add('geometry.index', 10000);
       },
       topLevelBlockers: function(wnd) {
         if (!!!wnd) return [];
@@ -418,6 +498,36 @@ module.exports = res = {};
             if (!!wnd) wnd.set('blocked', false);
           }
         }
+      },
+      messageBox: function(opts) {
+        var args = arguments;
+        var host = this;
+        return new Ractive.Promise(function(y) {
+          host.newWindow(function(w) {
+            var message;
+            if (args.length >= 2) {
+              message = args[0];
+              opts = args[1];
+            } else if (args.length === 1 && typeof args[0] === 'string') {
+              message = args[0];
+              opts = {};
+            }
+
+            w.set('title', opts.title || 'Message');
+            w.set('resizable', false);
+            w.controls('close');
+            w.content(message);
+            var btns = opts.buttons || ['ok'], out = [];
+            for (var i = 0; i < btns.length; i++) if (messageButtons.hasOwnProperty(btns[i])) out.push(messageButtons[btns[i]]);
+            w.buttons(out);
+            w.onClose = function() {
+              this.kill();
+              y(w.result || 'none');
+            };
+            if (!opts.hasOwnProperty('modal') || opts.modal) host.set('globalBlock', w);
+            w.activated = function() { w.move('center'); };
+          });
+        });
       }
     });
   }();
