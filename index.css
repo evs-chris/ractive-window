@@ -30,10 +30,6 @@
 .rw-interior > .rw-title {
   font-weight: bold;
 }
-.ractive-window.fixed .rw-interior > .rw-title {
-  float: left;
-  margin-right: 1em;
-}
 
 .ractive-window.fixed .rw-interior > .rw-body {
   margin: 0.1em;

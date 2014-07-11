@@ -9,7 +9,7 @@ module.exports = res = {};
 
 (function() {
   var template = "{{#rendered}}" +
-    "<div id='ractive-window-{{id}}' class='ractive-window{{#(buttons.length > 0)}} with-buttons{{/}}{{#resizable}} resizable{{/}}{{^resizable}} fixed{{/}}' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; {{#resizable}}width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; {{/}}z-index: {{geometry.index}};'>" +
+    "<div id='ractive-window-{{id}}' class='ractive-window{{#(buttons.length > 0)}} with-buttons{{/}}{{#resizable}} resizable{{/}}{{^resizable}} fixed{{/}}' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; {{#(resizable || geometry.state === 2)}}width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; {{/}}z-index: {{geometry.index}};'>" +
     "  <div class='rw-modal' on-mousedown='moveStart' style='{{^blocked}}display: none;{{/blocked}}'></div>" +
     "  <div class='rw-interior'>" +
     "    <div class='rw-controls'>{{>controls}}</div>" +
@@ -117,7 +117,7 @@ module.exports = res = {};
       title: '{{ title }}',
       body: '',
       foot: '',
-      buttons: "{{#buttons}}<button on-click='dialog-button' class='{{position || ''}}{{#buttonClass}} {{buttonClass}}{{/}}'>{{ label }}</button>{{/}}",
+      buttons: "{{#buttons}}<button on-click='dialog-button' class='{{position || ''}}{{#buttonClass}} {{buttonClass}}{{/}}' disabled='{{!.enabled}}'>{{ label }}</button>{{/}}",
       controls: '{{>minimizeControl}}{{>restoreControl}}{{>closeControl}}',
       minimizeControl: "<button on-click='minimize' class='rw-minimize'>{{>minimizeControlLabel}}</button>",
       minimizeControlLabel: "_",
@@ -132,6 +132,7 @@ module.exports = res = {};
       wnd.set('rendered', false);
       return this.set('rendered', true);
     },
+    title: function(str) { this.set('title', str); },
     move: function(x, y) {
       if (typeof x === 'string') {
         switch (x) {
@@ -140,6 +141,13 @@ module.exports = res = {};
             this.set({
               'geometry.top': (this.windowHost.el.clientHeight - document.getElementById('ractive-window-' + this.parentNumber).clientHeight) / 2,
               'geometry.left': (this.windowHost.el.clientWidth - document.getElementById('ractive-window-' + this.parentNumber).clientWidth) / 2
+            });
+            break;
+          case 'cascade':
+            var offset = (this.parentNumber * 10) + 10;
+            this.set({
+              'geometry.top': offset,
+              'geometry.left': offset
             });
             break;
         }
@@ -180,6 +188,7 @@ module.exports = res = {};
         'geometry.height': h
       });
     },
+    resizable: function(b) { this.set('resizable', b); },
     minimize: function() {
       var wnd = this;
       if (wnd.get('geometry.state') !== 1) {
@@ -268,12 +277,29 @@ module.exports = res = {};
           else if (b.position === 'center') middle.push(b);
           else { right.push(b); b.position = 'right'; }
         } else { right.push(b); b.position = 'right'; }
+        if (!b.hasOwnProperty('enabled')) b.enabled = true;
       }
       arr = [];
       for (i = 0; i < left.length; i++) arr.push(left[i]);
       for (i = right.length - 1; i >= 0; i--) arr.push(right[i]);
       for (i = 0; i < middle.length; i++) arr.push(middle[i]);
       this.set('buttons', arr);
+    },
+    button: function(name, cb) {
+      var arr = this.get('buttons');
+      var btn, i;
+      if (typeof name === 'number') { btn = arr[name]; i = name; }
+      else for (i = 0; i < arr.length; i++) {
+        if (arr[i].label === name) {
+          btn = arr[i];
+          break;
+        }
+      }
+
+      if (!!btn) {
+        cb(btn);
+        this.set('buttons.' + i, btn);
+      }
     },
     controls: function() {
       var arr = [], i, str = '';
