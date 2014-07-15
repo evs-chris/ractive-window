@@ -1,25 +1,20 @@
 var Ractive = require('ractive');
 
-// TODO: {message|input}box api built onto window -- plugin?
-// TODO: initial position helpers -- center screen/parent, cascade, etc
-// TODO: grid freindly sizing?
-// TODO: have window creation return a promise that fulfills or rejects when window closes
-
 module.exports = res = {};
 
 (function() {
-  var template = "{{#rendered}}" +
-    "<div id='ractive-window-{{id}}' class='ractive-window{{#(buttons.length > 0)}} with-buttons{{/}}{{#resizable}} resizable{{/}}{{^resizable}} fixed{{/}}' on-click='raise' style='{{#hidden}}display: none;{{/}}top: {{geometry.top}}px; left: {{geometry.left}}px; {{#(resizable || geometry.state === 2)}}width: {{geometry.width}}{{geometry.dunit}}; height: {{geometry.height}}{{geometry.dunit}}; {{/}}z-index: {{geometry.index}};'>" +
-    "  <div class='rw-modal' on-mousedown='moveStart' style='{{^blocked}}display: none;{{/blocked}}'></div>" +
+  var template = "{{#.rendered}}" +
+    "<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{/}}{{^.resizable}} fixed{{/}}' on-click='raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};'>" +
+    "  <div class='rw-modal' on-mousedown='moveStart' style='{{^.blocked}}display: none;{{/}}'></div>" +
     "  <div class='rw-interior'>" +
     "    <div class='rw-controls'>{{>controls}}</div>" +
     "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>" +
     "    <div class='rw-body'>{{>body}}</div>" +
-    "    {{#(buttons.length) > 0}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}" +
+    "    {{#(.buttons.length) > 0}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}" +
     "    <div class='rw-resize-handle' on-mousedown='resizeStart'></div>" +
     "    <div class='rw-foot'>{{>foot}}</div>" +
     "  </div>" +
-    "</div>{{/rendered}}";
+    "</div>{{/}}";
 
   var Window;
   Window = Ractive.extend({
@@ -139,15 +134,14 @@ module.exports = res = {};
           case 'center':
           case 'centerScreen':
             this.set({
-              'geometry.top': (this.windowHost.el.clientHeight - document.getElementById('ractive-window-' + this.parentNumber).clientHeight) / 2,
-              'geometry.left': (this.windowHost.el.clientWidth - document.getElementById('ractive-window-' + this.parentNumber).clientWidth) / 2
+              'geometry.top': (this.windowHost.el.clientHeight - this.element.clientHeight) / 2,
+              'geometry.left': (this.windowHost.el.clientWidth - this.element.clientWidth) / 2
             });
             break;
           case 'cascade':
-            var offset = (this.parentNumber * 10) + 10;
             this.set({
-              'geometry.top': offset,
-              'geometry.left': offset
+              'geometry.top': ((this.parentNumber % 10) * 20) + 10,
+              'geometry.left': ((this.parentNumber % 50) * 20) + 10
             });
             break;
         }
@@ -226,7 +220,7 @@ module.exports = res = {};
           wnd.fire('restored', { window: wnd });
           break;
         case 2:
-          var g = wnd.normalGeometry;
+          var g = wnd.normalGeometry || {};
           wnd.normalGeometry = null;
           wnd.set({
             hidden: false,
@@ -247,10 +241,11 @@ module.exports = res = {};
     },
     kill: function() {
       var wnd = this;
-      wnd.detach();
-      wnd.teardown();
       if (!!wnd.windowHost) {
         wnd.windowHost.killWindow(wnd);
+      } else {
+        wnd.detach();
+        wnd.teardown();
       }
     },
     content: function(ct) {
@@ -370,18 +365,21 @@ module.exports = res = {};
           wnd.parentNumber = current;
           wnd.set({
             'geometry.index': 1000 + wnds.length,
-            'id': current
+            'id': current,
+            'geometry.state': 0
           });
           if (!!cb && typeof(cb) === 'function') { try { cb(wnd); } catch (e) {} }
           else if (typeof(e) === 'function') { try { e(wnd); } catch (ex) {} }
+          wnd.move('cascade');
           wnd.loaded();
           wnd.raise();
-          wnd.set('rendered', true).then(wnd.activated());
+          wnd.set('rendered', true).then(function() {
+            wnd.element = document.getElementById('ractive-window-' + current);
+            wnd.activated();
+          });
         });
       },
       killWindow: function(wnd) {
-        wnd.detach();
-        wnd.teardown();
         var blocks = this.get('blocks');
         var wnds = this.get('windows');
         if (!!wnds) {
