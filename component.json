@@ -1,10 +1,10 @@
 {
   "name": "ractive-window",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": "evs-chris/ractive-window",
   "description": "In-browser window component, similar to jQueryUI Dialog, built on Ractive.",
   "dependencies": {
-    "ractivejs/ractive": "dev"
+    "ractivejs/ractive": "*"
   },
   "scripts": ["index.js"],
   "styles": ["index.css"],

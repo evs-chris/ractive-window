@@ -1,3 +1,10 @@
+## 0.4.0
+
+* Adds an element property to each window that references its actual DOM host.
+* Adds a ractive window id.
+* Changes template references to be relative to the current context.
+* Makes cascade eventually wrap back to starting position instead of angling down-right forever.
+
 ## 0.3.0
 
 * Adds initial support for cascade positioning.
