@@ -1,3 +1,7 @@
+## 0.4.1
+
+* __BUG:__ Fixes issue with leaky context and shared component state.
+
 ## 0.4.0
 
 * Adds an element property to each window that references its actual DOM host.
