@@ -10,7 +10,7 @@ module.exports = res = {};
     "    <div class='rw-controls'>{{>controls}}</div>" +
     "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>" +
     "    <div class='rw-body'>{{>body}}</div>" +
-    "    {{#(.buttons.length) > 0}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}" +
+    "    {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}" +
     "    <div class='rw-resize-handle' on-mousedown='resizeStart'></div>" +
     "    <div class='rw-foot'>{{>foot}}</div>" +
     "  </div>" +
@@ -21,6 +21,11 @@ module.exports = res = {};
     template: template,
     init: function() {
       var wnd = this;
+
+      this.set('geometry', {
+        top: 20, left: 20, width: 200, height: 200, state: 0, dunit: 'px', index: 1000,
+        minimum: { x: 0, y: 0, width: 70, height: 50 }
+      });
 
       var sx, sy;
       var moveFn;
@@ -100,19 +105,15 @@ module.exports = res = {};
     },
     activated: function() {},
     data: {
-      geometry: {
-        top: 20, left: 20, width: 200, height: 200, state: 0, dunit: 'px', index: 1000,
-        minimum: { x: 0, y: 0, width: 70, height: 50 }
-      },
       rendered: false,
       blocked: false,
       resizable: true
     },
     partials: {
-      title: '{{ title }}',
+      title: '{{ .title }}',
       body: '',
       foot: '',
-      buttons: "{{#buttons}}<button on-click='dialog-button' class='{{position || ''}}{{#buttonClass}} {{buttonClass}}{{/}}' disabled='{{!.enabled}}'>{{ label }}</button>{{/}}",
+      buttons: "{{#.buttons}}<button on-click='dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}' disabled='{{!.enabled}}'>{{ .label }}</button>{{/}}",
       controls: '{{>minimizeControl}}{{>restoreControl}}{{>closeControl}}',
       minimizeControl: "<button on-click='minimize' class='rw-minimize'>{{>minimizeControlLabel}}</button>",
       minimizeControlLabel: "_",
@@ -334,8 +335,7 @@ module.exports = res = {};
   WindowHost = function() {
     var counter = 0;
     return Ractive.extend({
-      init: function() {
-      },
+      isolated: true,
       defaults: {
         control: {
           label: function label(control, lbl) { Window.partials[control + 'ControlLabel'] = lbl; }
@@ -365,8 +365,7 @@ module.exports = res = {};
           wnd.parentNumber = current;
           wnd.set({
             'geometry.index': 1000 + wnds.length,
-            'id': current,
-            'geometry.state': 0
+            'id': current
           });
           if (!!cb && typeof(cb) === 'function') { try { cb(wnd); } catch (e) {} }
           else if (typeof(e) === 'function') { try { e(wnd); } catch (ex) {} }
