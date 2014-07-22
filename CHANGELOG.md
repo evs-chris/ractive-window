@@ -1,3 +1,8 @@
+## 0.5.0
+
+* Window load callbacks that return promises are now chained with the promise returned from newWindow.
+* Window and content div styles and classes can be added to the window model.
+
 ## 0.4.1
 
 * __BUG:__ Fixes issue with leaky context and shared component state.
