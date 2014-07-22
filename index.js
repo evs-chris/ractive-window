@@ -4,12 +4,12 @@ module.exports = res = {};
 
 (function() {
   var template = "{{#.rendered}}" +
-    "<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{/}}{{^.resizable}} fixed{{/}}' on-click='raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};'>" +
+    "<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{/}}{{^.resizable}} fixed{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>" +
     "  <div class='rw-modal' on-mousedown='moveStart' style='{{^.blocked}}display: none;{{/}}'></div>" +
     "  <div class='rw-interior'>" +
     "    <div class='rw-controls'>{{>controls}}</div>" +
     "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>" +
-    "    <div class='rw-body'>{{>body}}</div>" +
+    "    <div class='rw-body{{#.class.body}} {{.class.body}}{{/}}' style='{{#.style.body}}{{.style.body}}{{/}}'>{{>body}}</div>" +
     "    {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}" +
     "    <div class='rw-resize-handle' on-mousedown='resizeStart'></div>" +
     "    <div class='rw-foot'>{{>foot}}</div>" +
@@ -22,9 +22,13 @@ module.exports = res = {};
     init: function() {
       var wnd = this;
 
-      this.set('geometry', {
-        top: 20, left: 20, width: 200, height: 200, state: 0, dunit: 'px', index: 1000,
-        minimum: { x: 0, y: 0, width: 70, height: 50 }
+      this.set({
+        geometry: {
+          top: 20, left: 20, width: 200, height: 200, state: 0, dunit: 'px', index: 1000,
+          minimum: { x: 0, y: 0, width: 70, height: 50 }
+        },
+        style: {},
+        class: {}
       });
 
       var sx, sy;
@@ -357,7 +361,7 @@ module.exports = res = {};
         counter += 1;
         var arr = this.get('windowSlots');
         var host = this;
-        host.set('windowSlots.' + arr.length, current).then(function() {
+        return host.set('windowSlots.' + arr.length, current).then(function() {
           var wnds = host.findAllComponents('Window');
           var wnd = wnds[wnds.length - 1];
           host.set('windows.' + current, wnd);
@@ -367,15 +371,43 @@ module.exports = res = {};
             'geometry.index': 1000 + wnds.length,
             'id': current
           });
-          if (!!cb && typeof(cb) === 'function') { try { cb(wnd); } catch (e) {} }
-          else if (typeof(e) === 'function') { try { e(wnd); } catch (ex) {} }
-          wnd.move('cascade');
-          wnd.loaded();
-          wnd.raise();
-          wnd.set('rendered', true).then(function() {
-            wnd.element = document.getElementById('ractive-window-' + current);
-            wnd.activated();
-          });
+          var step1 = function() {
+            var mpr;
+            if (!!cb && typeof(cb) === 'function') {
+              try {
+                mpr = cb(wnd);
+                if (!!mpr && typeof mpr.then === 'function') return mpr;
+              } catch (e1) { console.log(e1); }
+            } else if (typeof(e) === 'function') {
+              try {
+                mpr = e(wnd);
+                if (!!mpr && typeof mpr.then === 'function') pr = mpr;
+              } catch (e2) { console.log(e2); }
+            }
+          };
+          pr = step1();
+          var step2 = function() {
+            var mpr;
+            wnd.move('cascade');
+            try {
+              mpr = wnd.loaded();
+              if (!!mpr && typeof mpr.then === 'function') return mpr;
+            } catch (e3) { console.log(e3); }
+          };
+          if (!!pr) pr = pr.then(step2); else pr = step2();
+          var step3 = function() {
+            var mpr;
+            wnd.raise();
+            return wnd.set('rendered', true).then(function() {
+              wnd.element = document.getElementById('ractive-window-' + current);
+              try {
+                mpr = wnd.activated();
+                if (!!mpr && typeof mpr.then === 'function') return mpr;
+              } catch (e4) { console.log(e4); }
+            });
+          };
+          if (!!pr) pr = pr.then(step3); else pr = step3();
+          return pr;
         });
       },
       killWindow: function(wnd) {
