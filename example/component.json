@@ -1,0 +1,11 @@
+{
+  "name": "ractive-window-example",
+  "dependencies": {
+    "ractivejs/ractive": "dev"
+  },
+  "scripts": ["index.js"],
+  "main": "index.js",
+  "license": "MIT",
+  "paths": ["./"],
+  "locals": ["ractive-window"]
+}

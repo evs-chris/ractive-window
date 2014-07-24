@@ -7,4 +7,5 @@ This component assumes use of the [component](http://component.io/) web componen
 
 Example
 -------
-To try the example, change the ractive dependency in component.json to something that exists and that is greater than 0.4.0, run ```component build```, and open example.html in your browser.
+To try the example, open example/example.html in a reasonably up to date browser.
+To build the example, you need a filesystem that easily supports symlinks (sorry Windows users). Just run ```component build``` in the example folder.
