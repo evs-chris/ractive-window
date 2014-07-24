@@ -3,7 +3,7 @@ var Ractive = require('ractive');
 module.exports = res = {};
 
 (function() {
-  var template = "{{#.rendered}}" +
+  var template = "{{#._wnd_rendered}}" +
     "<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{/}}{{^.resizable}} fixed{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>" +
     "  <div class='rw-modal' on-mousedown='moveStart' style='{{^.blocked}}display: none;{{/}}'></div>" +
     "  <div class='rw-interior'>" +
@@ -101,6 +101,19 @@ module.exports = res = {};
         var fn = e.context.action;
         if (!!fn && typeof fn === 'function') fn.call(this);
       });
+
+      wnd.result = null;
+      wnd.waitForClose = wnd.afterClose = new Ractive.Promise(function(y, n) {
+        var fn = function(t) {
+          return function(v) {
+            wnd.completeAfterClose = null;
+            wnd.rejectAfterClose = null;
+            t(v);
+          };
+        };
+        wnd.completeAfterClose = fn(y);
+        wnd.rejectAfterClose = fn(n);
+      });
     },
     loaded: function() {
       if (!!!this.get('buttonClass') && !!this.windowHost.get('buttonClass')) {
@@ -109,7 +122,7 @@ module.exports = res = {};
     },
     activated: function() {},
     data: {
-      rendered: false,
+      _wnd_rendered: false,
       blocked: false,
       resizable: true
     },
@@ -128,9 +141,9 @@ module.exports = res = {};
     },
     rerender: function() {
       var wnd = this;
-      if (!wnd.get('rendered')) return Ractive.Promise.resolve('ok');
-      wnd.set('rendered', false);
-      return this.set('rendered', true);
+      if (!wnd.get('_wnd_rendered')) return Ractive.Promise.resolve('ok');
+      wnd.set('_wnd_rendered', false);
+      return this.set('_wnd_rendered', true);
     },
     title: function(str) { this.set('title', str); },
     move: function(x, y) {
@@ -252,6 +265,7 @@ module.exports = res = {};
         wnd.detach();
         wnd.teardown();
       }
+      if (!!wnd.completeAfterClose) wnd.completeAfterClose(wnd.result);
     },
     content: function(ct) {
       this.partials.body = ct;
@@ -398,8 +412,8 @@ module.exports = res = {};
           var step3 = function() {
             var mpr;
             wnd.raise();
-            return wnd.set('rendered', true).then(function() {
-              wnd.element = document.getElementById('ractive-window-' + current);
+            return wnd.set('_wnd_rendered', true).then(function() {
+              wnd.element = wnd.find('.ractive-window');
               try {
                 mpr = wnd.activated();
                 if (!!mpr && typeof mpr.then === 'function') return mpr;
