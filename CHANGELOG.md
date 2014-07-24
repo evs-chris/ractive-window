@@ -1,3 +1,9 @@
+## 0.6.0
+
+* Changes the window render variable name to avoid clashes with more complex contents.
+* Adds an afterClose promise that is resolved when a window is killed.
+* Moves the example into its own directory and provides pre-built files.
+
 ## 0.5.0
 
 * Window load callbacks that return promises are now chained with the promise returned from newWindow.
