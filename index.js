@@ -8,10 +8,10 @@ module.exports = res = {};
     "  <div class='rw-modal' on-mousedown='moveStart' style='{{^.blocked}}display: none;{{/}}'></div>" +
     "  <div class='rw-interior'>" +
     "    <div class='rw-controls'>{{>controls}}</div>" +
-    "    <div class='rw-title' on-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>" +
+    "    <div class='rw-title' on-touchstart='moveStart' on-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>" +
     "    <div class='rw-body{{#.class.body}} {{.class.body}}{{/}}' style='{{#.style.body}}{{.style.body}}{{/}}'>{{>body}}</div>" +
     "    {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}" +
-    "    <div class='rw-resize-handle' on-mousedown='resizeStart'></div>" +
+    "    <div class='rw-resize-handle' on-touchstart='resizeStart' on-mousedown='resizeStart'></div>" +
     "    <div class='rw-foot'>{{>foot}}</div>" +
     "  </div>" +
     "</div>{{/}}";
@@ -34,45 +34,79 @@ module.exports = res = {};
       var sx, sy;
       var moveFn;
       moveFn = function(e) {
-        var x = +wnd.get('geometry.left') + (+(e.x || e.clientX) - +sx);
-        var y = +wnd.get('geometry.top') + (+(e.y || e.clientY) - +sy);
-        wnd.move(x, y);
-        sx = +(e.x || e.clientX);
-        sy = +(e.y || e.clientY);
-        if (e.type == 'mouseup') {
+        var x, y;
+        if (e.type.indexOf('touch') >= 0) {
+          x = +(e.changedTouches[0].clientX);
+          y = +(e.changedTouches[0].clientY);
+        } else {
+          x = +(e.x || e.clientX);
+          y = +(e.y || e.clientY);
+        }
+
+        wnd.move(+wnd.get('geometry.left') + x - +sx, +wnd.get('geometry.top') + y - +sy);
+        sx = x;
+        sy = y;
+        if (e.type === 'mouseup' || e.type === 'touchend') {
           document.removeEventListener('mousemove', moveFn, false);
           document.removeEventListener('mouseup', moveFn, false);
+          document.removeEventListener('touchmove', moveFn, false);
+          document.removeEventListener('touchend', moveFn, false);
         }
       };
       wnd.on('moveStart', function(e) {
-        if (e.original.type === 'mousedown' && e.original.button === 0) {
+        if ((e.original.type === 'mousedown' && e.original.button === 0) || e.original.type === 'touchstart') {
           wnd.restore();
-          sx = +(e.original.x || e.original.clientX);
-          sy = +(e.original.y || e.original.clientY);
+          if (e.original.type.indexOf('touch') >= 0) {
+            sx = +(e.original.changedTouches[0].clientX);
+            sy = +(e.original.changedTouches[0].clientY);
+          } else {
+            sx = +(e.original.x || e.original.clientX);
+            sy = +(e.original.y || e.original.clientY);
+          }
           document.addEventListener('mousemove', moveFn);
           document.addEventListener('mouseup', moveFn);
+          document.addEventListener('touchmove', moveFn);
+          document.addEventListener('touchend', moveFn);
+          e.original.preventDefault();
         }
       });
 
       var resizeFn;
       resizeFn = function(e) {
-        var w = +wnd.get('geometry.width') + (+(e.x || e.clientX) - +sx);
-        var h = +wnd.get('geometry.height') + (+(e.y || e.clientY) - +sy);
+        var x, y;
+        if (e.type.indexOf('touch') >= 0) {
+          x = e.changedTouches[0].clientX;
+          y = e.changedTouches[0].clientY;
+        } else {
+          x = +(e.x || e.clientX);
+          y = +(e.y || e.clientY);
+        }
+        var w = +wnd.get('geometry.width') + (x - +sx);
+        var h = +wnd.get('geometry.height') + (y - +sy);
         wnd.resize(w, h);
-        sx = +(e.x || e.clientX);
-        sy = +(e.y || e.clientY);
-        if (e.type == 'mouseup') {
+        sx = x;
+        sy = y;
+        if (e.type === 'mouseup' || e.type === 'touchend') {
           document.removeEventListener('mousemove', resizeFn, false);
           document.removeEventListener('mouseup', resizeFn, false);
+          document.removeEventListener('touchmove', resizeFn, false);
+          document.removeEventListener('touchend', resizeFn, false);
         }
       };
       wnd.on('resizeStart', function(e) {
-        if (e.original.type == 'mousedown' && e.original.button === 0) {
+        if ((e.original.type == 'mousedown' && e.original.button === 0) || e.original.type === 'touchstart') {
           wnd.restore();
-          sx = (e.original.x || e.original.clientX);
-          sy = (e.original.y || e.original.clientY);
+          if (e.original.type.indexOf('touch') >= 0) {
+            sx = e.original.changedTouches[0].clientX;
+            sy = e.original.changedTouches[0].clientY;
+          } else {
+            sx = (e.original.x || e.original.clientX);
+            sy = (e.original.y || e.original.clientY);
+          }
           document.addEventListener('mousemove', resizeFn);
           document.addEventListener('mouseup', resizeFn);
+          document.addEventListener('touchmove', resizeFn);
+          document.addEventListener('touchend', resizeFn);
         }
       });
 
@@ -130,7 +164,7 @@ module.exports = res = {};
       title: '{{ .title }}',
       body: '',
       foot: '',
-      buttons: "{{#.buttons}}<button on-click='dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}' disabled='{{!.enabled}}'>{{ .label }}</button>{{/}}",
+      buttons: "{{#.buttons}}<button on-click='dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}{{#../../class.button}} {{../../class.button}}{{/}}' disabled='{{!.enabled}}'>{{ .label }}</button>{{/}}",
       controls: '{{>minimizeControl}}{{>restoreControl}}{{>closeControl}}',
       minimizeControl: "<button on-click='minimize' class='rw-minimize'>{{>minimizeControlLabel}}</button>",
       minimizeControlLabel: "_",
