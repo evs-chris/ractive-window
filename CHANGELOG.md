@@ -1,3 +1,8 @@
+## 0.7.0
+
+* Adds initial support for touch when moving and resizing windows.
+* Adds support for button class at the window level.
+
 ## 0.6.0
 
 * Changes the window render variable name to avoid clashes with more complex contents.
