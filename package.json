@@ -3,11 +3,6 @@
   "private": true,
   "devDependencies": {
     "gobble": "^0",
-    "gobble-6to5": "^0.1.0",
-    "gobble-concat": "^0.3.0",
-    "gobble-es6-transpiler": "^0.1.1",
-    "gobble-esperanto-bundle": "^0.1.2",
-    "gobble-giblets": "evs-chris/gobble-giblets",
     "sander": "^0"
   }
 }
