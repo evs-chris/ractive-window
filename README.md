@@ -4,9 +4,9 @@ jQueryUI Dialog-like windowing built on [Ractive](https://github.com/ractivejs/r
 
 ## Where to get it?
 
-Racive Window is available as a [giblet](https://github.com/evs-chris/gobble-giblet), a [component](https://github.com/componentjs/component), and a pre-assembled UMD module. Each flavor does not declare an explici dependency on Ractive, but it is expected to be available as a global.
+Racive Window is available as a [giblet](https://github.com/evs-chris/gobble-giblet), a [component](https://github.com/componentjs/component), and a pre-assembled UMD module. Each flavor does not declare an explicit dependency on Ractive, but it is expected to be available as a global.
 
-All of the pre-build files live in tags on the build branch.
+All of the pre-built files live in tags on the build branch.
 
 ### Development
 
@@ -38,7 +38,7 @@ var host = ractive.findComponent('Host');
 
 `host.newWindow()` creates a new `Window` instance, assigns it a number, and returns a promise that resolves with the new instance. If a callback is supplied, it is called with instance just after the instance is created. The callback may return a promise, which is inserted into the init chain.
 
-After the callback, the component's `activate` function is called (defaults to a no-op). If `activate` returns a promise, it is insreted into the init chain.
+After the callback, the component's `activate` function is called (defaults to a no-op). If `activate` returns a promise, it is inserted into the init chain.
 
 After `activate`, the window is moved to its displayed coordinates, which defaults to a sort of cascade positioning. If any coordinates were set in the init callback or `activate`, those will be used instead.
 

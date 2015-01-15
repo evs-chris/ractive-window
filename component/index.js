@@ -2,8 +2,6 @@
 
   'use strict';
 
-  "use strict";
-  
   /* global Ractive */
   
   var Window__template = "{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>\n  <div class='rw-modal' on-mousedown='moveStart' style='{{^.blocked}}display: none;{{/}}'></div>\n  <div class='rw-interior'>\n    <div class='rw-controls'>{{>controls}}</div>\n    <div class='rw-title' on-touchstart-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>\n    <div class='rw-body{{#.class.body}} {{.class.body}}{{/}}' {{#.style.body}}style='{{.style.body}}'{{/}}>{{>body}}</div>\n    {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}\n    <div class='rw-resize-handle' on-touchstart-mousedown='resizeStart'></div>\n    <div class='rw-foot'>{{>foot}}</div>\n  </div>\n</div>{{/}}";
@@ -182,19 +180,17 @@
         switch (x) {
           case "center":
           case "centerScreen":
-            this.set({
+            return this.set({
               "geometry.top": (this.parent.el.clientHeight - this.element.clientHeight) / 2,
               "geometry.left": (this.parent.el.clientWidth - this.element.clientWidth) / 2
             });
-            break;
           case "cascade":
-            this.set({
+            return this.set({
               "geometry.top": ((this.parentNumber % 10) * 20) + 10,
               "geometry.left": ((this.parentNumber % 50) * 20) + 10
             });
-            break;
         }
-        return;
+        return Ractive.Promise.resolve(false);
       }
       y = +y;
       x = +x;
@@ -210,7 +206,7 @@
         if (x < +min.x) x = +min.x;
         if (y < +min.y) y = +min.y;
       }
-      this.set({
+      return this.set({
         "geometry.top": y,
         "geometry.left": x
       });
@@ -373,8 +369,6 @@
   var Window__default = Window__Window;
   //# sourceMappingURL=01-_6to5-window.js.map
 
-  "use strict";
-  
   /* global Ractive */
   
   var Host__messageButtons = {
@@ -462,8 +456,11 @@
         var step3 = function () {
           var mpr;
           if (wnd.get("geometry.left") === -9999) {
-            wnd.move("cascade");
+            return wnd.move("cascade").then(function () {
+              return wnd;
+            });
           }
+          return wnd;
         };
         if (!!pr) pr = pr.then(step3);else pr = step3();
   
@@ -679,8 +676,6 @@
   var Host__default = Host__WindowHost;
   //# sourceMappingURL=01-_6to5-host.js.map
 
-  "use strict";
-  
   var index__res = {
     Window: Window__default,
     WindowHost: Host__default
