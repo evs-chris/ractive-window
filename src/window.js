@@ -180,19 +180,17 @@ Window = Ractive.extend({
       switch (x) {
         case 'center':
           case 'centerScreen':
-          this.set({
+          return this.set({
           'geometry.top': (this.parent.el.clientHeight - this.element.clientHeight) / 2,
           'geometry.left': (this.parent.el.clientWidth - this.element.clientWidth) / 2
         });
-        break;
         case 'cascade':
-          this.set({
+          return this.set({
           'geometry.top': ((this.parentNumber % 10) * 20) + 10,
           'geometry.left': ((this.parentNumber % 50) * 20) + 10
         });
-        break;
       }
-      return;
+      return Ractive.Promise.resolve(false);
     }
     y = +y;
     x = +x;
@@ -208,7 +206,7 @@ Window = Ractive.extend({
       if (x < +min.x) x = +min.x;
       if (y < +min.y) y = +min.y;
     }
-    this.set({
+    return this.set({
       'geometry.top': y,
       'geometry.left': x
     });

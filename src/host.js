@@ -72,8 +72,9 @@ WindowHost = (function() {
       var step3 = function() {
         var mpr;
         if (wnd.get('geometry.left') === -9999) {
-          wnd.move('cascade');
+          return wnd.move('cascade').then(() => wnd);
         }
+        return wnd;
       };
       if (!!pr) pr = pr.then(step3); else pr = step3();
 
