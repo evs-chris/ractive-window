@@ -5,7 +5,7 @@ var path = require('path');
 var parts = [], dev = gobble.env() !== 'production';
 
 var transpilerOptions = {
-  blacklist: ['modules']
+  blacklist: ['modules', 'useStrict']
 };
 
 // in dev mode, make libraries and the sandbox available

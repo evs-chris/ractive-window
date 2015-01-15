@@ -1,3 +1,13 @@
+## 0.8.1
+
+* __BUG?:__ `window.move` now returns a Promise.
+* __BUG?:__ The Promise returned from `host.newWindow` will now resolve with the new window instead of `undefined`.
+
+## 0.8.0
+
+* Switched to gobble for bulding, and code is consequently ES6ified.
+* Window creation process has been refactor to be slightly less wacky.
+
 ## 0.7.0
 
 * Adds initial support for touch when moving and resizing windows.
