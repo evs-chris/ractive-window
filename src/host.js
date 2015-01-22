@@ -132,7 +132,7 @@ WindowHost = (function() {
     components: { Window: Window },
     data: { windowSlots: [], windows: {}, blocks: {}, globalBlock: null },
     computed: { blocked: function() { return !!this.get('globalBlock'); } },
-    template: "<div class='ractive-window-host-modal' style='{{^blocked}}display: none;{{/blocked}}'></div>{{#windowSlots}}<Window/>{{/windowSlots}}",
+    template: "<div class='ractive-window-host-modal' style='{{^blocked}}display: none;{{/blocked}}'></div><div class='host-content'>{{yield}}</div>{{#windowSlots}}<Window/>{{/windowSlots}}",
     newWindow: newWindow,
     killWindow: function(wnd) {
       var blocks = this.get('blocks');

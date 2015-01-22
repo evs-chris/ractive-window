@@ -1,14 +1,14 @@
 /* global Ractive */
 
 var template =
-`{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>
-  <div class='rw-modal' on-mousedown='moveStart' style='{{^.blocked}}display: none;{{/}}'></div>
+`{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>
+  <div class='rw-modal' on-mousedown='_moveStart' style='{{^.blocked}}display: none;{{/}}'></div>
   <div class='rw-interior'>
     <div class='rw-controls'>{{>controls}}</div>
-    <div class='rw-title' on-touchstart-mousedown='moveStart' on-dblclick='restore'>{{>title}}</div>
+    <div class='rw-title' on-touchstart-mousedown='_moveStart' on-dblclick='_restore'>{{>title}}</div>
     <div class='rw-body{{#.class.body}} {{.class.body}}{{/}}' {{#.style.body}}style='{{.style.body}}'{{/}}>{{>body}}</div>
     {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}
-    <div class='rw-resize-handle' on-touchstart-mousedown='resizeStart'></div>
+    <div class='rw-resize-handle' on-touchstart-mousedown='_resizeStart'></div>
     <div class='rw-foot'>{{>foot}}</div>
   </div>
 </div>{{/}}`;
@@ -41,7 +41,7 @@ Window = Ractive.extend({
         document.removeEventListener('touchend', moveFn, false);
       }
     };
-    wnd.on('moveStart', function(e) {
+    wnd.on('_moveStart', function(e) {
       if ((e.original.type === 'mousedown' && e.original.button === 0) || e.original.type === 'touchstart') {
         wnd.restore();
         if (e.original.type.indexOf('touch') >= 0) {
@@ -81,7 +81,7 @@ Window = Ractive.extend({
         document.removeEventListener('touchend', resizeFn, false);
       }
     };
-    wnd.on('resizeStart', function(e) {
+    wnd.on('_resizeStart', function(e) {
       if ((e.original.type == 'mousedown' && e.original.button === 0) || e.original.type === 'touchstart') {
         wnd.restore();
         if (e.original.type.indexOf('touch') >= 0) {
@@ -107,8 +107,8 @@ Window = Ractive.extend({
       }
     };
 
-    wnd.on('minimize', function(e) { stateFn('min', e); });
-    wnd.on('restore', function(e) {
+    wnd.on('_minimize', function(e) { stateFn('min', e); });
+    wnd.on('_restore', function(e) {
       switch (wnd.get('geometry.state')) {
         case 0: stateFn('max', e); break;
         case 1:
@@ -117,9 +117,9 @@ Window = Ractive.extend({
         default: break;
       }
     });
-    wnd.on('raise', function(e) { wnd.raise(); });
-    wnd.on('close', function(e) { wnd.close(); });
-    wnd.on('dialog-button', function(e) {
+    wnd.on('_raise', function(e) { wnd.raise(); });
+    wnd.on('_close', function(e) { wnd.close(); });
+    wnd.on('_dialog-button', function(e) {
       var fn = e.context.action;
       if (!!fn && typeof fn === 'function') fn.call(this);
     });
@@ -136,15 +136,29 @@ Window = Ractive.extend({
       wnd.completeAfterClose = fn(y);
       wnd.rejectAfterClose = fn(n);
     });
-
   },
-  onrender: function() {
+  onrender() {
     if (!!!this.get('buttonClass') && !!this.parent.get('buttonClass')) {
       this.set('buttonClass', this.parent.get('buttonClass'));
     }
+
+    this.watchers = this.observe({
+      title: (n, o) => {
+        this.fire('retitle', n, this);
+      },
+
+      'geometry.state': (n, o) => {
+        switch (n) {
+          case 0: this.fire('restore', n, this); break;
+          case 1: this.fire('minimize', n, this); break;
+          case 2: this.fire('maximize', n, this); break;
+        }
+      }
+    });
   },
-  activated: function() {},
-  data: {
+  onunrender() { if (this.watchers && typeof this.watchers.cancel === 'function') this.watchers.cancel(); },
+  activated() {},
+  data() { return {
     _wnd_rendered: false,
     blocked: false,
     resizable: true,
@@ -154,18 +168,18 @@ Window = Ractive.extend({
     },
     style: {},
     class: {}
-  },
+  }; },
   partials: {
     title: '{{ .title }}',
     body: '',
     foot: '',
-    buttons: "{{#.buttons}}<button on-click='dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}{{#../../class.button}} {{../../class.button}}{{/}}' disabled='{{!.enabled}}'>{{ .label }}</button>{{/}}",
+    buttons: "{{#.buttons}}<button on-click='_dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}{{#../../class.button}} {{../../class.button}}{{/}}' disabled='{{!.enabled}}'>{{ .label }}</button>{{/}}",
     controls: '{{>minimizeControl}}{{>restoreControl}}{{>closeControl}}',
-    minimizeControl: "<button on-click='minimize' class='rw-minimize'>{{>minimizeControlLabel}}</button>",
+    minimizeControl: "<button on-click='_minimize' class='rw-minimize'>{{>minimizeControlLabel}}</button>",
     minimizeControlLabel: "_",
-    restoreControl: "<button on-click='restore' class='rw-restore'>{{>restoreControlLabel}}</button>",
+    restoreControl: "<button on-click='_restore' class='rw-restore'>{{>restoreControlLabel}}</button>",
     restoreControlLabel: "^",
-    closeControl: "<button on-click='close' class='rw-close'>{{>closeControlLabel}}</button>",
+    closeControl: "<button on-click='_close' class='rw-close'>{{>closeControlLabel}}</button>",
     closeControlLabel: "X"
   },
   rerender: function() {
@@ -286,6 +300,7 @@ Window = Ractive.extend({
   },
   kill: function() {
     var wnd = this;
+    this.fire('close', this);
     if (!!wnd.parent) {
       wnd.parent.killWindow(wnd);
     } else {

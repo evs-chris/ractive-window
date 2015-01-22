@@ -13,8 +13,32 @@
       var ractive = new Ractive({
         components: RactiveWindow.default,
         el: 'container',
-        template: '<button on-click="mkWnd">New Window</button><button on-click="message">MessageBox</button><button on-click="fixed">New Fixed Window</button><WindowHost />'
+        template: '<button on-click="mkWnd">New Window</button><button on-click="message">MessageBox</button><button on-click="fixed">New Fixed Window</button>' +
+          '<WindowHost><ul>{{#list:id}}<li on-click="selectWindow(window)" style="{{#state === 1}}font-size: 0.5em{{/}}{{#state === 2}}font-size: 1.5em{{/}}">{{ title }}</li>{{/}}</ul>',
+        data: { list: {} }
       });
+
+      ractive.on('*.retitle', function(title, wnd) {
+        var wnds = this.get('list'), id = wnd._guid;
+        if (!(id in wnds)) {
+          this.set('list.' + id, { title: title, window: wnd, state: wnd.get('geometry.state') });
+        } else {
+          this.set('list.' + id + '.title', title);
+        }
+      });
+
+      ractive.on('Window.minimize Window.maximize Window.restore', function(state, wnd) {
+        this.set('list.' + wnd._guid + '.state', state);
+      });
+
+      ractive.on('Window.close', function(wnd) {
+        delete this.get('list')[wnd._guid];
+        this.update('list');
+      });
+
+      ractive.selectWindow = function(wnd) {
+        wnd.restore();
+      };
 
       var host = ractive.findComponent('WindowHost');
       host.set('buttonClass', 'dlg-button');

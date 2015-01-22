@@ -5,6 +5,7 @@
   border-radius: 5px;
   background-color: white;
   padding: -1px;
+  box-sizing: border-box;
 }
 
 .ractive-window.resizable {
@@ -15,6 +16,18 @@
 .ractive-window > .rw-interior {
   cursor: default;
 }
+
+.ractive-window.maximized {
+  border-radius: 0px;
+  border-left: none;
+  border-right: none;
+
+}
+
+.ractive-window.maximized > .rw-interior {
+  margin: 2px;
+}
+
 .ractive-window.fixed > .rw-interior {
   margin: 5px;
 }
@@ -37,6 +50,7 @@
 }
 .ractive-window.resizable .rw-interior > .rw-body {
   position: absolute;
+  margin: 0px;
   top: 2em;
   bottom: 0.1em;
   left: 0.1em;
@@ -80,7 +94,8 @@
   float: right;
 }
 
-.ractive-window.fixed .rw-interior > .rw-resize-handle {
+.ractive-window.fixed .rw-interior > .rw-resize-handle,
+.ractive-window.resizable.maximized .rw-interior > .rw-resize-handle {
   display: none;
 }
 
