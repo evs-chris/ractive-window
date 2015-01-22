@@ -62,6 +62,32 @@ This method resets the body partial of the window using the supplied template, w
 
 *TODO* `move()`, `resize()`, `title()`, `resizable()`, `minimize()`, `maximize()`, `restore()`, `raise()`, `kill()`, `buttons()`, `button()`, `close()`, `controls()`
 
+### Window Events
+
+Since events in Ractive components bubble up the hierarchy to the root, you can install handlers at the root for window events. You can use a wildcard event path or the component name, which will typically be `Window`. Be careful with wildcard events, especially with common names like `close`.
+```js
+// just components named Window
+ractive.on('Window.close', (wnd) => doSomething());
+
+// any component close event
+ractive.on('*.close', (wnd) => doSomething());
+```
+
+* `close` - `listener(window)` - fires just before a window is torn down. If the window aborts closing from its handler, this will not be fired.
+* `retitle` - `listener(title, window)` - fires when the window title changes. The first time it fires (first render), the title will be undefined.
+* `maximize` - `listener(state, window)` - fires when the window is maximized.
+* `minimize` - `listener(state, window)` - fires when the window is minimized.
+* `restore` - `listener(state, window)` - fires when the window is restored.
+
+States are defined as
+```json
+{
+  "normal": 0,
+  "minimized": 1,
+  "maximized": 2
+}
+```
+
 ## License
 
 Copyright (c) 2014 Chris Reeves. Released under an [MIT license](https://github.com/evs-chris/ractive-window/blob/master/LICENSE.md).
