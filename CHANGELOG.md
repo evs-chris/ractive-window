@@ -1,3 +1,7 @@
+## 0.9.1
+
+* __BUG:__ Make sure windows that start out maximized restore to a visible position.
+
 ## 0.9.0
 
 * Better default maximization styling using the newly added `maximized` window class.
