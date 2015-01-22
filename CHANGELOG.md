@@ -1,3 +1,10 @@
+## 0.9.0
+
+* Better default maximization styling using the newly added `maximized` window class.
+* Internal events are now prefixed with `_` to make way for...
+* There are now events for when a window title (retitle) changes, when the window state changes (maximize, minimize, restore), and when a window is closed (close).
+* `WindowHost` may now have content, which it will just `{{yield}}`.
+
 ## 0.8.1
 
 * __BUG?:__ `window.move` now returns a Promise.

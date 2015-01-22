@@ -2,7 +2,6 @@
   "name": "ractive-window",
   "private": true,
   "devDependencies": {
-    "gobble": "^0",
-    "sander": "^0"
+    "gobble": "^0"
   }
 }

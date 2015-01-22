@@ -1,5 +1,4 @@
 var gobble = require('gobble');
-var sander = require('sander');
 var path = require('path');
 
 var parts = [], dev = gobble.env() !== 'production';
