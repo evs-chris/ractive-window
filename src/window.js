@@ -273,24 +273,27 @@ Window = Ractive.extend({
     switch (wnd.get('geometry.state')) {
       case 1: // minimized
         wnd.set({
-        hidden: false,
-        'geometry.state': 0
-      });
-      wnd.fire('restored', { window: wnd });
-      break;
+          hidden: false,
+          'geometry.state': 0
+        });
+        break;
       case 2:
         var g = wnd.normalGeometry || {};
-      wnd.normalGeometry = null;
-      wnd.set({
-        hidden: false,
-        'geometry.left': g.left,
-        'geometry.top': g.top,
-        'geometry.width': g.width,
-        'geometry.height': g.height,
-        'geometry.dunit': 'px',
-        'geometry.state': 0
-      });
-      break;
+        wnd.normalGeometry = null;
+        if (g.top < 0 || g.left < 0) {
+          g.top = 0;
+          g.left = 0;
+        }
+        wnd.set({
+          hidden: false,
+          'geometry.left': g.left,
+          'geometry.top': g.top,
+          'geometry.width': g.width,
+          'geometry.height': g.height,
+          'geometry.dunit': 'px',
+          'geometry.state': 0
+        });
+        break;
       default: break;
     }
     this.raise();
