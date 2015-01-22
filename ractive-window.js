@@ -300,11 +300,14 @@
             hidden: false,
             "geometry.state": 0
           });
-          wnd.fire("restored", { window: wnd });
           break;
         case 2:
           var g = wnd.normalGeometry || {};
           wnd.normalGeometry = null;
+          if (g.top < 0 || g.left < 0) {
+            g.top = 0;
+            g.left = 0;
+          }
           wnd.set({
             hidden: false,
             "geometry.left": g.left,
