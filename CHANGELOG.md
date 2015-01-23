@@ -1,3 +1,7 @@
+## 0.10.1
+
+* __BUG:__ Don't try to resize windows that aren't yet rendered using non-px sizes.
+
 ## 0.10.0
 
 * Allow `resize` to be called with CSS units using dirty tricks.
