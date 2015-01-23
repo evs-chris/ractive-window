@@ -425,18 +425,20 @@
     var unit = _ref2[2];
     unit = unit || "px";
     var dunit = dim === "width" ? "dwunit" : "dhunit";
-    switch (unit) {
-      case "px": return size;
-      default:
-        var toSet = {};
-        toSet["geometry." + dim] = size;
-        toSet["geometry." + dunit] = unit;
-        this.set(toSet);
-        var v = this.find("div")["client" + dim[0].toUpperCase() + dim.substring(1)];
-        toSet["geometry." + dim] = v;
-        toSet["geometry." + dunit] = "px";
-        this.set(toSet);
-        return v;
+    var div = this.find("div");
+  
+    if (unit === "px") {
+      return size;
+    } else if (div) {
+      var toSet = {};
+      toSet["geometry." + dim] = size;
+      toSet["geometry." + dunit] = unit;
+      this.set(toSet);
+      var v = this.find("div")["client" + dim[0].toUpperCase() + dim.substring(1)];
+      toSet["geometry." + dim] = v;
+      toSet["geometry." + dunit] = "px";
+      this.set(toSet);
+      return v;
     }
   }
   
