@@ -1,7 +1,7 @@
 /* global Ractive */
 
 var template =
-`{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>
+`{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dwunit}}; height: {{.geometry.height}}{{.geometry.dhunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>
   <div class='rw-modal' on-mousedown='_moveStart' style='{{^.blocked}}display: none;{{/}}'></div>
   <div class='rw-interior'>
     <div class='rw-controls'>{{>controls}}</div>
@@ -163,7 +163,7 @@ Window = Ractive.extend({
     blocked: false,
     resizable: true,
     geometry: {
-      top: -9999, left: -9999, width: 200, height: 200, state: 0, dunit: 'px', index: 1000,
+      top: -9999, left: -9999, width: 200, height: 200, state: 0, dwunit: 'px', dhunit: 'px', index: 1000,
       minimum: { x: 0, y: 0, width: 70, height: 50 }
     },
     style: {},
@@ -226,6 +226,8 @@ Window = Ractive.extend({
     });
   },
   resize: function(w, h) {
+    w = getDimPx.call(this,'width', w);
+    h = getDimPx.call(this, 'height', h);
     var min = this.get('geometry.minimum');
     var max = this.get('geometry.maximum');
     if (!!max) {
@@ -262,7 +264,8 @@ Window = Ractive.extend({
         'geometry.top': 0,
         'geometry.width': 100,
         'geometry.height': 100,
-        'geometry.dunit': '%',
+        'geometry.dwunit': '%',
+        'geometry.dhunit': '%',
         'geometry.state': 2
       });
       wnd.fire('maximized', { window: wnd });
@@ -290,7 +293,8 @@ Window = Ractive.extend({
           'geometry.top': g.top,
           'geometry.width': g.width,
           'geometry.height': g.height,
-          'geometry.dunit': 'px',
+          'geometry.dwunit': 'px',
+          'geometry.dhunit': 'px',
           'geometry.state': 0
         });
         break;
@@ -380,5 +384,25 @@ Window = Ractive.extend({
     }
   }
 });
+
+var cssUnit = /(\d+)(.*)/;
+function getDimPx(dim, length) {
+  var [ whole, size, unit ] = cssUnit.exec(length.toString());
+  unit = unit || 'px';
+  var dunit = dim === 'width' ? 'dwunit' : 'dhunit';
+  switch (unit) {
+    case 'px': return size;
+    default:
+      var toSet = {};
+      toSet['geometry.' + dim] = size;
+      toSet['geometry.' + dunit] = unit;
+      this.set(toSet);
+      var v = this.find('div')['client' + dim[0].toUpperCase() + dim.substring(1)];
+      toSet['geometry.' + dim] = v;
+      toSet['geometry.' + dunit] = 'px';
+      this.set(toSet);
+      return v;
+  }
+}
 
 export default Window;
