@@ -1,3 +1,7 @@
+## 0.10.0
+
+* Allow `resize` to be called with CSS units using dirty tricks.
+
 ## 0.9.1
 
 * __BUG:__ Make sure windows that start out maximized restore to a visible position.
