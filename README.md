@@ -56,11 +56,15 @@ Windows are composed of a number of partials that control appearance and content
 
 There are helpers to update each partial.
 
-#### `window.content()`
+#### `window.content(tpl)`
 
 This method resets the body partial of the window using the supplied template, which may be a string, pre-parsed template, or template function. The initial call to this method should probably be in the `newWindow()` init callback or window `activate` function.
 
-*TODO* `move()`, `resize()`, `title()`, `resizable()`, `minimize()`, `maximize()`, `restore()`, `raise()`, `kill()`, `buttons()`, `button()`, `close()`, `controls()`
+#### `window.resize(width, height)`
+
+This method resizes the window to the specified width and height. If the parameters are integers or strings with `px` units, then they will be used directly. If a unit other than `px` is used, each dimension is set to its given value and then reset to its corresponding pixel value, which is retrieved with `clientWidth` or `clientHeight`.
+
+*TODO* `move()`, `title()`, `resizable()`, `minimize()`, `maximize()`, `restore()`, `raise()`, `kill()`, `buttons()`, `button()`, `close()`, `controls()`
 
 ### Window Events
 

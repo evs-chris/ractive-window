@@ -18,9 +18,13 @@
 
   'use strict';
 
+  var Window___toArray = function (arr) {
+    return Array.isArray(arr) ? arr : Array.from(arr);
+  };
+  
   /* global Ractive */
   
-  var Window__template = "{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dunit}}; height: {{.geometry.height}}{{.geometry.dunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>\n  <div class='rw-modal' on-mousedown='_moveStart' style='{{^.blocked}}display: none;{{/}}'></div>\n  <div class='rw-interior'>\n    <div class='rw-controls'>{{>controls}}</div>\n    <div class='rw-title' on-touchstart-mousedown='_moveStart' on-dblclick='_restore'>{{>title}}</div>\n    <div class='rw-body{{#.class.body}} {{.class.body}}{{/}}' {{#.style.body}}style='{{.style.body}}'{{/}}>{{>body}}</div>\n    {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}\n    <div class='rw-resize-handle' on-touchstart-mousedown='_resizeStart'></div>\n    <div class='rw-foot'>{{>foot}}</div>\n  </div>\n</div>{{/}}";
+  var Window__template = "{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dwunit}}; height: {{.geometry.height}}{{.geometry.dhunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>\n  <div class='rw-modal' on-mousedown='_moveStart' style='{{^.blocked}}display: none;{{/}}'></div>\n  <div class='rw-interior'>\n    <div class='rw-controls'>{{>controls}}</div>\n    <div class='rw-title' on-touchstart-mousedown='_moveStart' on-dblclick='_restore'>{{>title}}</div>\n    <div class='rw-body{{#.class.body}} {{.class.body}}{{/}}' {{#.style.body}}style='{{.style.body}}'{{/}}>{{>body}}</div>\n    {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}\n    <div class='rw-resize-handle' on-touchstart-mousedown='_resizeStart'></div>\n    <div class='rw-foot'>{{>foot}}</div>\n  </div>\n</div>{{/}}";
   
   var Window__Window;
   Window__Window = Ractive.extend({
@@ -182,7 +186,7 @@
         blocked: false,
         resizable: true,
         geometry: {
-          top: -9999, left: -9999, width: 200, height: 200, state: 0, dunit: "px", index: 1000,
+          top: -9999, left: -9999, width: 200, height: 200, state: 0, dwunit: "px", dhunit: "px", index: 1000,
           minimum: { x: 0, y: 0, width: 70, height: 50 }
         },
         style: {},
@@ -248,6 +252,8 @@
       });
     },
     resize: function (w, h) {
+      w = Window__getDimPx.call(this, "width", w);
+      h = Window__getDimPx.call(this, "height", h);
       var min = this.get("geometry.minimum");
       var max = this.get("geometry.maximum");
       if (!!max) {
@@ -286,7 +292,8 @@
           "geometry.top": 0,
           "geometry.width": 100,
           "geometry.height": 100,
-          "geometry.dunit": "%",
+          "geometry.dwunit": "%",
+          "geometry.dhunit": "%",
           "geometry.state": 2
         });
         wnd.fire("maximized", { window: wnd });
@@ -314,7 +321,8 @@
             "geometry.top": g.top,
             "geometry.width": g.width,
             "geometry.height": g.height,
-            "geometry.dunit": "px",
+            "geometry.dwunit": "px",
+            "geometry.dhunit": "px",
             "geometry.state": 0
           });
           break;
@@ -405,6 +413,32 @@
       }
     }
   });
+  
+  var Window__cssUnit = /(\d+)(.*)/;
+  function Window__getDimPx(dim, length) {
+    var _ref = Window__cssUnit.exec(length.toString());
+  
+    var _ref2 = Window___toArray(_ref);
+  
+    var whole = _ref2[0];
+    var size = _ref2[1];
+    var unit = _ref2[2];
+    unit = unit || "px";
+    var dunit = dim === "width" ? "dwunit" : "dhunit";
+    switch (unit) {
+      case "px": return size;
+      default:
+        var toSet = {};
+        toSet["geometry." + dim] = size;
+        toSet["geometry." + dunit] = unit;
+        this.set(toSet);
+        var v = this.find("div")["client" + dim[0].toUpperCase() + dim.substring(1)];
+        toSet["geometry." + dim] = v;
+        toSet["geometry." + dunit] = "px";
+        this.set(toSet);
+        return v;
+    }
+  }
   
   var Window__default = Window__Window;
   //# sourceMappingURL=01-_6to5-window.js.map
