@@ -1,8 +1,8 @@
 {
   "name": "ractive-window",
   "type": "umd",
-  "version": "0.10.1",
-  "versions": [ "0.10.1", "0.10.0", "0.9.1", "0.9.0", "0.8.1", "0.8.0" ],
+  "version": "0.10.2",
+  "versions": [ "0.10.2", "0.10.1", "0.10.0", "0.9.1", "0.9.0", "0.8.1", "0.8.0" ],
   "scripts": [ { "file": "ractive-window.js", "target": "index.js" } ],
   "styles": [ "assets/index.css" ]
 }

@@ -36,6 +36,7 @@
       var moveFn;
       moveFn = function (e) {
         var x, y;
+        e.preventDefault();
         if (e.type.indexOf("touch") >= 0) {
           x = +(e.changedTouches[0].clientX);
           y = +(e.changedTouches[0].clientY);
@@ -75,6 +76,7 @@
       var resizeFn;
       resizeFn = function (e) {
         var x, y;
+        e.preventDefault();
         if (e.type.indexOf("touch") >= 0) {
           x = e.changedTouches[0].clientX;
           y = e.changedTouches[0].clientY;
