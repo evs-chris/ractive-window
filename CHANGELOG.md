@@ -1,3 +1,7 @@
+## 0.10.2
+
+* __BUG:__ Prevent text selection while dragging to resize or move windows.
+
 ## 0.10.1
 
 * __BUG:__ Don't try to resize windows that aren't yet rendered using non-px sizes.
