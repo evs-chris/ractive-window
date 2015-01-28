@@ -1,3 +1,9 @@
+## 0.11.0
+
+* Adds support for having a single designated topmost window.
+* Adds support for more easily colored titlebars.
+* __BUG:__ Fixes resizing support in IE, which apparently likes *really* precise mouse coordinates.
+
 ## 0.10.2
 
 * __BUG:__ Prevent text selection while dragging to resize or move windows.
