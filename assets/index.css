@@ -3,9 +3,13 @@
   border: 1px solid black;
   box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 10px;
   border-radius: 5px;
-  background-color: white;
+  background-color: #efefef;
   padding: -1px;
   box-sizing: border-box;
+}
+
+.ractive-window.topmost {
+  background-color: #fff;
 }
 
 .ractive-window.resizable {
@@ -41,11 +45,17 @@
 }
 
 .rw-interior > .rw-title {
+  margin: -5px;
+  padding: 5px;
   font-weight: bold;
+  border-radius: 5px 5px 0 0;
+}
+.ractive-window.resizable > .rw-interior > .rw-title {
+  white-space: nowrap;
 }
 
 .ractive-window.fixed .rw-interior > .rw-body {
-  margin: 0.1em;
+  margin: 0.5em 0.1em 0.1em 0.1em;
   clear: both;
 }
 .ractive-window.resizable .rw-interior > .rw-body {
@@ -90,7 +100,13 @@
   right: 0.1em;
 }
 
+.ractive-window.fixed > .rw-interior > .rw-controls {
+  top: 3px;
+}
 .rw-interior > .rw-controls {
+  position: relative;
+  right: 0px;
+  top: -2px;
   float: right;
 }
 

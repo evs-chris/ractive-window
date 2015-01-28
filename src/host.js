@@ -137,16 +137,25 @@ WindowHost = (function() {
     killWindow: function(wnd) {
       var blocks = this.get('blocks');
       var wnds = this.get('windows');
+      var topWnd, topIdx = -1, i;
       if (!!wnds) {
         for (var w in wnds) {
           if (wnds[w] === wnd) delete wnds[w];
+          else {
+            i = wnds[w].get('geometry.index');
+            if (i > topIdx) {
+              topIdx = i;
+              topWnd = wnds[w];
+            }
+          }
         }
+        topWnd.set('topmost', true);
       }
       var slots = this.get('windowSlots');
       if (!!slots) {
         this.splice('windowSlots', slots.indexOf(wnd.parentNumber), 1);
       }
-      for (var i in blocks) {
+      for (i in blocks) {
         var arr = blocks[i];
         if (!!arr && Array.isArray(arr) && arr.indexOf(wnd.parentNumber) >= 0) arr.splice(arr.indexOf(wnd.parentNumber), 1);
       }
@@ -197,8 +206,9 @@ WindowHost = (function() {
 
       // loop through array assigning indices
       for (i in wnds) {
-        wnds[i].set('geometry.index', 1000 + (+i));
+        wnds[i].set({ 'geometry.index': 1000 + (+i), 'topmost': false });
       }
+      wnd.set('topmost', true);
 
       function globalBlocks(wnd) {
         var res = [];

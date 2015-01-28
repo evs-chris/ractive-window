@@ -1,7 +1,7 @@
 /* global Ractive */
 
 var template =
-`{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dwunit}}; height: {{.geometry.height}}{{.geometry.dhunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>
+`{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}{{#.topmost}} topmost{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dwunit}}; height: {{.geometry.height}}{{.geometry.dhunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>
   <div class='rw-modal' on-mousedown='_moveStart' style='{{^.blocked}}display: none;{{/}}'></div>
   <div class='rw-interior'>
     <div class='rw-controls'>{{>controls}}</div>
@@ -393,7 +393,7 @@ function getDimPx(dim, length) {
   unit = unit || 'px';
   var dunit = dim === 'width' ? 'dwunit' : 'dhunit';
   var div = this.find('div');
-  
+
   if (unit === 'px') {
     return size;
   } else if (div) {
