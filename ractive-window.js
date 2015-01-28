@@ -24,7 +24,7 @@
   
   /* global Ractive */
   
-  var Window__template = "{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dwunit}}; height: {{.geometry.height}}{{.geometry.dhunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>\n  <div class='rw-modal' on-mousedown='_moveStart' style='{{^.blocked}}display: none;{{/}}'></div>\n  <div class='rw-interior'>\n    <div class='rw-controls'>{{>controls}}</div>\n    <div class='rw-title' on-touchstart-mousedown='_moveStart' on-dblclick='_restore'>{{>title}}</div>\n    <div class='rw-body{{#.class.body}} {{.class.body}}{{/}}' {{#.style.body}}style='{{.style.body}}'{{/}}>{{>body}}</div>\n    {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}\n    <div class='rw-resize-handle' on-touchstart-mousedown='_resizeStart'></div>\n    <div class='rw-foot'>{{>foot}}</div>\n  </div>\n</div>{{/}}";
+  var Window__template = "{{#_wnd_rendered}}<div id='ractive-window-{{.id}}' class='ractive-window{{#(.buttons.length > 0)}} with-buttons{{/}}{{#.resizable}} resizable{{else}} fixed{{/}}{{#.geometry.state === 2}} maximized{{/}}{{#.class.window}} {{.class.window}}{{/}}{{#.topmost}} topmost{{/}}' on-click='_raise' style='{{#.hidden}}display: none;{{/}}top: {{.geometry.top}}px; left: {{.geometry.left}}px; {{#(.resizable || .geometry.state === 2)}}width: {{.geometry.width}}{{.geometry.dwunit}}; height: {{.geometry.height}}{{.geometry.dhunit}}; {{/}}z-index: {{.geometry.index}};{{#.style.window}} {{.style.window}}{{/}}'>\n  <div class='rw-modal' on-mousedown='_moveStart' style='{{^.blocked}}display: none;{{/}}'></div>\n  <div class='rw-interior'>\n    <div class='rw-controls'>{{>controls}}</div>\n    <div class='rw-title' on-touchstart-mousedown='_moveStart' on-dblclick='_restore'>{{>title}}</div>\n    <div class='rw-body{{#.class.body}} {{.class.body}}{{/}}' {{#.style.body}}style='{{.style.body}}'{{/}}>{{>body}}</div>\n    {{#(.buttons.length > 0)}}<div class='rw-buttons'>{{>buttons}}</div>{{/}}\n    <div class='rw-resize-handle' on-touchstart-mousedown='_resizeStart'></div>\n    <div class='rw-foot'>{{>foot}}</div>\n  </div>\n</div>{{/}}";
   
   var Window__Window;
   Window__Window = Ractive.extend({
@@ -416,7 +416,7 @@
     }
   });
   
-  var Window__cssUnit = /(\d+)(.*)/;
+  var Window__cssUnit = /([\d\.]+)(.*)/;
   function Window__getDimPx(dim, length) {
     var _ref = Window__cssUnit.exec(length.toString());
   
@@ -607,16 +607,24 @@
       killWindow: function (wnd) {
         var blocks = this.get("blocks");
         var wnds = this.get("windows");
+        var topWnd, topIdx = -1, i;
         if (!!wnds) {
           for (var w in wnds) {
-            if (wnds[w] === wnd) delete wnds[w];
+            if (wnds[w] === wnd) delete wnds[w];else {
+              i = wnds[w].get("geometry.index");
+              if (i > topIdx) {
+                topIdx = i;
+                topWnd = wnds[w];
+              }
+            }
           }
+          if (topWnd) topWnd.set("topmost", true);
         }
         var slots = this.get("windowSlots");
         if (!!slots) {
           this.splice("windowSlots", slots.indexOf(wnd.parentNumber), 1);
         }
-        for (var i in blocks) {
+        for (i in blocks) {
           var arr = blocks[i];
           if (!!arr && Array.isArray(arr) && arr.indexOf(wnd.parentNumber) >= 0) arr.splice(arr.indexOf(wnd.parentNumber), 1);
         }
@@ -667,8 +675,9 @@
   
         // loop through array assigning indices
         for (i in wnds) {
-          wnds[i].set("geometry.index", 1000 + (+i));
+          wnds[i].set({ "geometry.index": 1000 + (+i), topmost: false });
         }
+        wnd.set("topmost", true);
   
         function globalBlocks(wnd) {
           var res = [];
