@@ -387,7 +387,7 @@ Window = Ractive.extend({
   }
 });
 
-var cssUnit = /(\d+)(.*)/;
+var cssUnit = /([\d\.]+)(.*)/;
 function getDimPx(dim, length) {
   var [ whole, size, unit ] = cssUnit.exec(length.toString());
   unit = unit || 'px';

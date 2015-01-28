@@ -149,7 +149,7 @@ WindowHost = (function() {
             }
           }
         }
-        topWnd.set('topmost', true);
+        if (topWnd) topWnd.set('topmost', true);
       }
       var slots = this.get('windowSlots');
       if (!!slots) {
