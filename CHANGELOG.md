@@ -1,3 +1,9 @@
+## 0.12.0
+
+* Adds support for template content in button labels and window titles.
+* Adjusts handling of topmost windows.
+* __BUG?:__ Keeps buttons on the bottom of maximized fixed windows.
+
 ## 0.11.0
 
 * Adds support for having a single designated topmost window.
