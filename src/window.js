@@ -169,13 +169,21 @@ Window = Ractive.extend({
       minimum: { x: 0, y: 0, width: 70, height: 50 }
     },
     style: {},
-    class: {}
+    class: {},
+    makePartial(key, template) {
+      if (!this._makePartial_templates) this._makePartial_templates = {};
+      if (this._makePartial_templates[key] != template) {
+        this.resetPartial(key, template);
+        this._makePartial_templates[key] = template;
+      }
+      return key;
+    }
   }; },
   partials: {
-    title: '{{ .title }}',
+    title: "{{> ~/makePartial('titleTpl', .title) }}",
     body: '',
     foot: '',
-    buttons: "{{#.buttons}}<button on-click='_dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}{{#../../class.button}} {{../../class.button}}{{/}}' disabled='{{!.enabled}}'>{{ .label }}</button>{{/}}",
+    buttons: "{{#.buttons:i}}<button on-click='_dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}{{#../../class.button}} {{../../class.button}}{{/}}' disabled='{{!.enabled}}'>{{> ~/makePartial('button' + i + 'Tpl', .label) }}</button>{{/}}",
     controls: '{{>minimizeControl}}{{>restoreControl}}{{>closeControl}}',
     minimizeControl: "<button on-click='_minimize' class='rw-minimize'>{{>minimizeControlLabel}}</button>",
     minimizeControlLabel: "_",

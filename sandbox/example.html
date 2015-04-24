@@ -61,6 +61,9 @@
           w.resizable(false);
           w.content('lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>lalalalalalalalalala<br/>');
           w.title('I fit my content...');
+          w.buttons(
+            { label: "{{ clicked || 'Not Clicked'}}", action: function() { w.set('clicked', 'Clicked!'); } }
+          );
         });
       });
     </script>
