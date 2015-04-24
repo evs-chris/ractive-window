@@ -149,7 +149,7 @@ WindowHost = (function() {
             }
           }
         }
-        if (topWnd) topWnd.set('topmost', true);
+        if (topWnd && !topWnd.get('topmost')) topWnd.set('topmost', true);
       }
       var slots = this.get('windowSlots');
       if (!!slots) {
@@ -206,9 +206,10 @@ WindowHost = (function() {
 
       // loop through array assigning indices
       for (i in wnds) {
-        wnds[i].set({ 'geometry.index': 1000 + (+i), 'topmost': false });
+        wnds[i].set('geometry.index', 1000 + (+i));
+        if (wnds[i] !== wnd) wnds[i].set('topmost', false);
       }
-      wnd.set('topmost', true);
+      if (!wnd.get('topmost')) wnd.set('topmost', true);
 
       function globalBlocks(wnd) {
         var res = [];
