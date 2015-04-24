@@ -192,14 +192,22 @@
           minimum: { x: 0, y: 0, width: 70, height: 50 }
         },
         style: {},
-        "class": {}
+        "class": {},
+        makePartial: function (key, template) {
+          if (!this._makePartial_templates) this._makePartial_templates = {};
+          if (this._makePartial_templates[key] != template) {
+            this.resetPartial(key, template);
+            this._makePartial_templates[key] = template;
+          }
+          return key;
+        }
       };
     },
     partials: {
-      title: "{{ .title }}",
+      title: "{{> ~/makePartial('titleTpl', .title) }}",
       body: "",
       foot: "",
-      buttons: "{{#.buttons}}<button on-click='_dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}{{#../../class.button}} {{../../class.button}}{{/}}' disabled='{{!.enabled}}'>{{ .label }}</button>{{/}}",
+      buttons: "{{#.buttons:i}}<button on-click='_dialog-button' class='{{.position || ''}}{{#.buttonClass}} {{.buttonClass}}{{/}}{{#../../class.button}} {{../../class.button}}{{/}}' disabled='{{!.enabled}}'>{{> ~/makePartial('button' + i + 'Tpl', .label) }}</button>{{/}}",
       controls: "{{>minimizeControl}}{{>restoreControl}}{{>closeControl}}",
       minimizeControl: "<button on-click='_minimize' class='rw-minimize'>{{>minimizeControlLabel}}</button>",
       minimizeControlLabel: "_",
@@ -445,7 +453,6 @@
   }
   
   var Window__default = Window__Window;
-  //# sourceMappingURL=01-_6to5-window.js.map
 
   /* global Ractive */
   
@@ -618,7 +625,7 @@
               }
             }
           }
-          if (topWnd) topWnd.set("topmost", true);
+          if (topWnd && !topWnd.get("topmost")) topWnd.set("topmost", true);
         }
         var slots = this.get("windowSlots");
         if (!!slots) {
@@ -675,9 +682,10 @@
   
         // loop through array assigning indices
         for (i in wnds) {
-          wnds[i].set({ "geometry.index": 1000 + (+i), topmost: false });
+          wnds[i].set("geometry.index", 1000 + (+i));
+          if (wnds[i] !== wnd) wnds[i].set("topmost", false);
         }
-        wnd.set("topmost", true);
+        if (!wnd.get("topmost")) wnd.set("topmost", true);
   
         function globalBlocks(wnd) {
           var res = [];
@@ -761,7 +769,6 @@
   })();
   
   var Host__default = Host__WindowHost;
-  //# sourceMappingURL=01-_6to5-host.js.map
 
   var index__res = {
     Window: Window__default,
@@ -769,9 +776,8 @@
   };
   
   var index__default = index__res;
-  //# sourceMappingURL=01-_6to5-index.js.map
 
   exports.default = index__default;
 
 }));
-//# sourceMappingURL=./ractive-window.js.map
+//# sourceMappingURL=ractive-window.js.map

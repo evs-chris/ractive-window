@@ -25,7 +25,15 @@
   border-radius: 0px;
   border-left: none;
   border-right: none;
-
+}
+.ractive-window.fixed.maximized > .rw-interior .rw-buttons {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.25em;
+}
+.ractive-window.fixed.maximized > .rw-interior {
+  margin-bottom: 3em;
 }
 
 .ractive-window.maximized > .rw-interior {
@@ -52,6 +60,10 @@
 }
 .ractive-window.resizable > .rw-interior > .rw-title {
   white-space: nowrap;
+}
+.ractive-window.maximized .rw-title {
+  border-radius: 0;
+  margin: -7px;
 }
 
 .ractive-window.fixed .rw-interior > .rw-body {
@@ -95,7 +107,6 @@
 .ractive-window.resizable .rw-interior > .rw-buttons {
   position: absolute;
   bottom: 0.1em;
-  height: 2.5em;
   left: 0.1em;
   right: 0.1em;
 }
