@@ -1,3 +1,7 @@
+## 0.12.1
+
+* Update default style.
+
 ## 0.12.0
 
 * Adds support for template content in button labels and window titles.
